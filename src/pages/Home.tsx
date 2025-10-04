@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
-import SearchBar from '@/components/SearchBar';
+import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import RepoCard, { RepoData } from '@/components/RepoCard';
 import { usePreferences } from '@/contexts/PreferencesContext';
-import heroImage from '@/assets/hero-bg.jpg';
 
 // Mock recommended repos - in production, these would come from an API
 const mockRecommendedRepos: RepoData[] = [
@@ -40,9 +39,25 @@ const mockRecommendedRepos: RepoData[] = [
 const Home = () => {
   const navigate = useNavigate();
   const { preferences, hasCompletedOnboarding } = usePreferences();
+  const [query, setQuery] = useState('');
 
-  const handleSearch = (query: string) => {
-    navigate('/search', { state: { query } });
+  const placeholders = [
+    "Find beginner-friendly Python repos with good first issues",
+    "Search for JavaScript projects with documentation needs",
+    "Discover Ruby repositories accepting new contributors",
+    "Look for React projects with Hacktoberfest tags",
+    "Find machine learning repos for beginners",
+  ];
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (query.trim()) {
+      navigate('/search', { state: { query } });
+    }
   };
 
   return (
@@ -50,31 +65,26 @@ const Home = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section 
-        className="relative py-20 px-4 bg-gradient-to-b from-background via-secondary/30 to-background overflow-hidden"
-        style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0.98)), url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
+      <section className="relative py-32 px-4 overflow-hidden">
         <div className="container mx-auto max-w-4xl text-center relative z-10">
-          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-glow to-primary">
-            Discover Your Next
-            <br />
-            Open Source Contribution
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+            What do you want to create?
           </h1>
-          <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-secondary-foreground mb-16 max-w-2xl mx-auto">
             Find the perfect repository to contribute to based on your skills, interests, and availability
           </p>
           
-          <SearchBar onSearch={handleSearch} className="max-w-3xl mx-auto" />
+          <PlaceholdersAndVanishInput
+            placeholders={placeholders}
+            onChange={handleChange}
+            onSubmit={handleSubmit}
+          />
 
           {!hasCompletedOnboarding && (
             <div className="mt-8">
               <button
                 onClick={() => navigate('/onboarding')}
-                className="text-primary hover:text-primary-glow font-medium underline underline-offset-4 transition-colors"
+                className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors"
               >
                 Complete onboarding for personalized recommendations
               </button>
@@ -84,14 +94,14 @@ const Home = () => {
       </section>
 
       {/* Spotlight Section */}
-      <section className="py-16 px-4 bg-background">
+      <section className="py-16 px-4">
         <div className="container mx-auto max-w-7xl">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-2">
                 {hasCompletedOnboarding ? 'Recommended For You' : 'Popular Repositories'}
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-secondary-foreground">
                 {hasCompletedOnboarding 
                   ? 'Based on your preferences and skill level'
                   : 'Start your open source journey with these projects'}
@@ -99,7 +109,7 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-4">
             {mockRecommendedRepos.map((repo) => (
               <RepoCard key={repo.name} repo={repo} />
             ))}
